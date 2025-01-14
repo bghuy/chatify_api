@@ -3,6 +3,7 @@ import { Request } from 'express';
 import { JwtGuard } from 'src/guards/jwt.guard';
 import { ErrorType } from 'src/utils/error';
 import { ServerService } from './server.service';
+import { AuthenticatedUserType } from 'src/utils/types/auth';
 
 @Controller('server')
 export class ServerController {
@@ -12,12 +13,18 @@ export class ServerController {
     @UseGuards(JwtGuard)
     async getServerByUserId(@Param('userId') userId: string, @Req() req: Request) {
         try {
-            if(userId && req?.user?.id && userId !== req.user.id) {
+            if(userId && (req.user as AuthenticatedUserType)?.id && userId !== (req.user as AuthenticatedUserType).id) {
                 throw new HttpException('Forbidden: You are not allowed to access this resource', HttpStatus.FORBIDDEN);
             }
             return this.serverService.fetchServerByUserId(userId);
         } catch (error) {
-            throw new HttpException(ErrorType.SERVER_INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
     }  
 }
