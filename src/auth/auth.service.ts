@@ -99,5 +99,25 @@ export class AuthService {
             );
         }
 
-    } 
+    }
+    
+    async fetchUserProfile(userId: string) {
+        try {
+            const user = await this.prisma.user.findUnique({
+                where: {
+                    id: userId
+                }
+            })
+            if(!user) {
+                throw new HttpException(ErrorType.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+            }
+            const {password, ...userData} = user;
+            return userData;
+        } catch (error) {
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
 }

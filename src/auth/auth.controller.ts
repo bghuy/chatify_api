@@ -12,6 +12,7 @@ import { UserRegisterDto } from './../dtos/user/UserRegisterDto';
 import { GoogleGuard } from './../guards/google.guard';
 import { CustomRequest } from './../utils/interfaces/request';
 import { PrismaService } from './../prisma/prisma.service';
+import { AuthenticatedUserType } from 'src/utils/types/auth';
 
 @Controller('auth')
 export class AuthController {
@@ -22,6 +23,22 @@ export class AuthController {
     @UseGuards(JwtGuard, RoleGuard)
     status(@Req() req: Request) {
         return req.user;
+    }
+
+    @Get('profile')
+    @UseGuards(JwtGuard)
+    getProfile(@Req() req: Request) {
+        try {
+            return this.authService.fetchUserProfile((req.user as AuthenticatedUserType)?.id)
+        } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
     }
 
     @Get('refresh-token')
