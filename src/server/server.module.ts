@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ServerController } from './server.controller';
 import { ServerService } from './server.service';
-import { jwtStrategy } from 'src/auth/strategies/jwt.strategy';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { jwtStrategy } from './../auth/strategies/jwt.strategy';
+import { PrismaModule } from './../prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule],
