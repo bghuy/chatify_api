@@ -10,7 +10,6 @@ export class RefreshTokenGuard implements CanActivate {
   ): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const refreshToken = request.cookies['refresh_token']; 
-    console.log(refreshToken,"refresh_token");
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token is missing or invalid.');
     }
