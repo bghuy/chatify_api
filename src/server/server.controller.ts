@@ -18,7 +18,7 @@ export class ServerController {
                 throw new HttpException('Forbidden: You are not allowed to access this resource', HttpStatus.FORBIDDEN);
             }
             const server = await this.serverService.fetchServerByUserId(userId);
-            return { message: 'Server is found', data: {server} }
+            return { message: 'Server found', data: {server} }
         } catch (error) {
             if (error instanceof HttpException) {
                 throw error;
@@ -29,15 +29,13 @@ export class ServerController {
             );
         }
     }
-    @Get('/all')
+
+    @Get('')
     @UseGuards(JwtGuard)
     async getServers(@Req() req: Request) {
         try {
-            // if(userId && (req.user as AuthenticatedUserType)?.id && userId !== (req.user as AuthenticatedUserType).id) {
-            //     throw new HttpException('Forbidden: You are not allowed to access this resource', HttpStatus.FORBIDDEN);
-            // }
-            // const server = await this.serverService.fetchServerByUserId(userId);
-            // return { message: 'Server is found', data: {server} }
+            const servers = await this.serverService.fetchServers((req.user as AuthenticatedUserType)?.id);
+            return { message: 'Servers found', data: {servers} }
         } catch (error) {
             if (error instanceof HttpException) {
                 throw error;

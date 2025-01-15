@@ -8,17 +8,51 @@ import {v4 as uuidv4} from "uuid"
 export class ServerService {
     constructor(private readonly prisma: PrismaService) { }
     async fetchServerByUserId(userId: string){
-        const server = await this.prisma.server.findFirst({
-            where:{
-                members:{
-                    some: {
-                        userId: userId
+        try {
+            const server = await this.prisma.server.findFirst({
+                where:{
+                    members:{
+                        some: {
+                            userId: userId
+                        }
                     }
                 }
-            }
-        })
-        if(!server) throw new HttpException('Server not found', HttpStatus.NOT_FOUND)
-        return server
+            })
+            if(!server) throw new HttpException('Server not found', HttpStatus.NOT_FOUND)
+            return server
+        } catch (error) {
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            )
+        }
+
+    }
+    async fetchServers (userId: string) {
+        try {
+            const existingUser = await this.prisma.user.findUnique({
+                where: {
+                    id: userId
+                }
+            })
+            if (!existingUser) throw new HttpException(ErrorType.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED)
+            const servers = await this.prisma.server.findMany({
+                where: {
+                    members: {
+                        some: {
+                            userId: userId
+                        }
+                    }
+                }
+            });
+            return servers;
+        } catch (error) {
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+
     }
 
     async createServer(userId: string,serverData: ServerCreateInputType  ) {
@@ -28,7 +62,7 @@ export class ServerService {
                     id: userId
                 }
             })
-            if (!existingUser) throw new HttpException(ErrorType.USER_NOT_FOUND, HttpStatus.NOT_FOUND)
+            if (!existingUser) throw new HttpException(ErrorType.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED)
             const server = await this.prisma.server.create({
                 data: {
                     userId: userId,
