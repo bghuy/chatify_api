@@ -29,7 +29,6 @@ export class AuthController {
     @UseGuards(JwtGuard)
     async getProfile(@Req() req: Request) {
         try {
-            console.log("here");
             const profile = await this.authService.fetchUserProfile((req.user as AuthenticatedUserType)?.id)
             return { message: 'Refresh token successful', data:  {profile} }
         } catch (error) {
@@ -97,10 +96,10 @@ export class AuthController {
 
     @Post('logout')
     @UseGuards(JwtGuard)
-    logout(@Req() req: Request, @Res() res: Response) {
+    logout(@Res({passthrough: true}) res: Response) {
         res.clearCookie('refresh_token');
         res.clearCookie('access_token');
-        return res.json({ message: 'Logout successful' });
+        return { message: 'Logout successful'};
     }
 
     @Get('google/login')

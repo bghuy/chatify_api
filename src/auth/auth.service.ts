@@ -112,7 +112,6 @@ export class AuthService {
                 throw new HttpException(ErrorType.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
             }
             const {password, ...userData} = user;
-            console.log(userData,"use");
             
             return userData;
         } catch (error) {

@@ -10,29 +10,11 @@ import { ServerCreateDto } from './../dtos/server/ServerCreate.dto';
 export class ServerController {
     constructor(private  readonly serverService: ServerService) {}
 
-    @Get(':userId')
-    @UseGuards(JwtGuard)
-    async getServerByUserId(@Param('userId') userId: string, @Req() req: Request) {
-        try {
-            if(userId && (req.user as AuthenticatedUserType)?.id && userId !== (req.user as AuthenticatedUserType).id) {
-                throw new HttpException('Forbidden: You are not allowed to access this resource', HttpStatus.FORBIDDEN);
-            }
-            const server = await this.serverService.fetchServerByUserId(userId);
-            return { message: 'Server found', data: {server} }
-        } catch (error) {
-            if (error instanceof HttpException) {
-                throw error;
-            }
-            throw new HttpException(
-                ErrorType.SERVER_INTERNAL_ERROR,
-                HttpStatus.INTERNAL_SERVER_ERROR,
-            );
-        }
-    }
-
-    @Get('')
+    @Get('/all')
     @UseGuards(JwtGuard)
     async getServers(@Req() req: Request) {
+        console.log("all");
+        
         try {
             const servers = await this.serverService.fetchServers((req.user as AuthenticatedUserType)?.id);
             return { message: 'Servers found', data: {servers} }
@@ -45,7 +27,45 @@ export class ServerController {
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
-    }  
+    } 
+
+    @Get(':serverId')
+    @UseGuards(JwtGuard)
+    async getServerById(@Param('serverId') serverId: string,@Req() req: Request) {
+        console.log("id");
+        
+        try {
+            const server = await this.serverService.fetchServerById(serverId);
+            return { message: 'Server found', data: {server} }
+        } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    @Get()
+    @UseGuards(JwtGuard)
+    async getServerByUserId(@Req() req: Request) {
+        try {
+            const server = await this.serverService.fetchServerByUserId((req.user as AuthenticatedUserType)?.id);
+            return { message: 'Server found', data: {server} }
+        } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+ 
 
     @Post()
     @UseGuards(JwtGuard)
