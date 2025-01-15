@@ -27,9 +27,11 @@ export class AuthController {
 
     @Get('profile')
     @UseGuards(JwtGuard)
-    getProfile(@Req() req: Request) {
+    async getProfile(@Req() req: Request) {
         try {
-            return this.authService.fetchUserProfile((req.user as AuthenticatedUserType)?.id)
+            console.log("here");
+            const profile = await this.authService.fetchUserProfile((req.user as AuthenticatedUserType)?.id)
+            return { message: 'Refresh token successful', data:  {profile} }
         } catch (error) {
             if (error instanceof HttpException) {
                 throw error;
