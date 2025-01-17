@@ -73,7 +73,8 @@ export class ServerController {
     async createServer(@Body() newServerData: ServerCreateDto, @Req() req: Request) {
         try {
             const userId = (req.user as AuthenticatedUserType)?.id;
-            return this.serverService.createServer(userId, newServerData);
+            const server = await this.serverService.createServer(userId, newServerData);
+            return { message: 'Server found', data: {server} }
         } catch (error) {
             if (error instanceof HttpException) {
                 throw error;
