@@ -17,6 +17,17 @@ export type UserRegisterType = {
     updatedAt?: Date | string
 }
 
+export type AuthenticatedUserType = {
+    id: string
+    name?: string | null
+    email: string
+    emailVerified?: Date | string | null
+    image?: string | null
+    role?: UserRole
+    createdAt?: Date | string
+    updatedAt?: Date | string
+}
+
 export type GoogleUserDetails = {
     email: string;
     displayName: string;

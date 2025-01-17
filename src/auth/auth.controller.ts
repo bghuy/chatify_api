@@ -12,6 +12,7 @@ import { UserRegisterDto } from './../dtos/user/UserRegisterDto';
 import { GoogleGuard } from './../guards/google.guard';
 import { CustomRequest } from './../utils/interfaces/request';
 import { PrismaService } from './../prisma/prisma.service';
+import { AuthenticatedUserType } from 'src/utils/types/auth';
 
 @Controller('auth')
 export class AuthController {
@@ -22,6 +23,23 @@ export class AuthController {
     @UseGuards(JwtGuard, RoleGuard)
     status(@Req() req: Request) {
         return req.user;
+    }
+
+    @Get('profile')
+    @UseGuards(JwtGuard)
+    async getProfile(@Req() req: Request) {
+        try {
+            const profile = await this.authService.fetchUserProfile((req.user as AuthenticatedUserType)?.id)
+            return { message: 'Refresh token successful', data:  {profile} }
+        } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
     }
 
     @Get('refresh-token')
@@ -61,8 +79,11 @@ export class AuthController {
             maxAge: refreshTokenExpiry || sevenDaysInMs,
             sameSite: process.env.SERVER_MODE === 'production' ? 'none' : 'lax',
         });
-        console.log('Response Headers (Before Sending):', res.getHeaders());
-        return res.status(200).json({ message: 'Login successful', data: {access_token} });
+
+        return {
+            message: 'Login successful',
+            data: { access_token }
+        };
     } 
     @Post('register')
     @UsePipes(ValidationPipe)
@@ -75,10 +96,10 @@ export class AuthController {
 
     @Post('logout')
     @UseGuards(JwtGuard)
-    logout(@Req() req: Request, @Res() res: Response) {
+    logout(@Res({passthrough: true}) res: Response) {
         res.clearCookie('refresh_token');
         res.clearCookie('access_token');
-        return res.json({ message: 'Logout successful' });
+        return { message: 'Logout successful'};
     }
 
     @Get('google/login')
@@ -89,7 +110,7 @@ export class AuthController {
 
     @Get('google/redirect')
     @UseGuards(GoogleGuard)
-    handleGoogleRedirect(@Req() req: Request, @Res() res: Response) {
+    handleGoogleRedirect(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
         const {access_token, refresh_token} = req.user as {access_token: string, refresh_token: string};
         const refreshTokenExpiry = parseInt(process.env.REFRESH_TOKEN_EXPIRY || '0', 10);
         const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000
@@ -99,11 +120,14 @@ export class AuthController {
             secure: process.env.SERVER_MODE === 'production',
             sameSite: 'none'
         });
-        return res.json({ message: 'Login successful', data: {access_token} });
+        return { 
+            message: 'Login successful', 
+            data: {access_token} 
+        };
     }
 
     @Get('test-cookie')
-    testCookie(@Res() res: Response) {
+    testCookie(@Res({ passthrough: true }) res: Response) {
         const cookieValue = "test cookie";
         res.cookie('test_cookie', cookieValue, {
             httpOnly: true,
@@ -111,7 +135,10 @@ export class AuthController {
             secure: process.env.SERVER_MODE === 'production',
             sameSite: 'none',
         });
-        return res.json({ message: 'Cookie value', data: {cookieValue} });
+        return { 
+            message: 'Cookie value', 
+            data: {cookieValue} 
+        };
     }
 
 
