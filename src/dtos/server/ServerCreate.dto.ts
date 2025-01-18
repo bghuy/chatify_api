@@ -8,3 +8,11 @@ export class ServerCreateDto {
     image: string
     inviteCode?: string
 }
+
+export class ServerUpdateDto {
+    @IsString()
+    @MinLength(1)
+    name: string
+    
+    image: string
+}
