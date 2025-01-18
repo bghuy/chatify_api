@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { MemberRole, Prisma } from '@prisma/client';
 import { PrismaService } from './../prisma/prisma.service';
 import { ErrorType } from './../utils/error';
-import { ServerCreateInputType } from './../utils/types/server';
+import { ServerCreateInputType, ServerUpdateInputType } from './../utils/types/server';
 import {v4 as uuidv4} from "uuid"
 @Injectable()
 export class ServerService {
@@ -128,5 +128,49 @@ export class ServerService {
             throw new HttpException(ErrorType.SERVER_INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR)
         }
 
+    }
+
+    async deleteServer(userId: string ,serverId: string) {
+        try {
+            const existingUser = await this.prisma.user.findUnique({
+                where: {
+                    id: userId
+                }
+            })
+            if (!existingUser) throw new HttpException(ErrorType.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED)
+            const server = await this.prisma.server.delete({
+                where: {
+                    id: serverId,
+                    userId: userId
+                }, 
+            })
+            return server
+        } catch (error) {
+            throw new HttpException(ErrorType.SERVER_INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async updateServer (userId: string, serverId: string, serverData: ServerUpdateInputType) {
+        try {
+            const existingUser = await this.prisma.user.findUnique({
+                where: {
+                    id: userId
+                }
+            })
+            if (!existingUser) throw new HttpException(ErrorType.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED)
+            const server = await this.prisma.server.update({
+                where: {
+                    id: serverId,
+                    userId: userId
+                },
+                data: {
+                    name: serverData.name,
+                    image: serverData.image
+                }
+            })
+            return server
+        } catch (error) {
+            throw new HttpException(ErrorType.SERVER_INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
     }
 }

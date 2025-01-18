@@ -1,10 +1,10 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtGuard } from './../guards/jwt.guard';
 import { ErrorType } from './../utils/error';
 import { ServerService } from './server.service';
 import { AuthenticatedUserType } from './../utils/types/auth';
-import { ServerCreateDto } from './../dtos/server/ServerCreate.dto';
+import { ServerCreateDto, ServerUpdateDto } from './../dtos/server/ServerCreate.dto';
 
 @Controller('server')
 export class ServerController {
@@ -76,6 +76,46 @@ export class ServerController {
             const server = await this.serverService.createServer(userId, newServerData);
             return { message: 'Server found', data: {server} }
         } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    @Delete(':serverId')
+    @UseGuards(JwtGuard)
+    async deleteServer(@Param('serverId') serverId: string, @Req() req: Request) {
+        try {
+            if(!serverId) throw new HttpException('serverId is missing', HttpStatus.BAD_REQUEST)
+            const userId = (req.user as AuthenticatedUserType)?.id;
+            const server = await this.serverService.deleteServer(userId,serverId)
+            return { message: 'Server deleted', data: {server} }
+        }
+        catch(error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    @Patch(':serverId')
+    @UseGuards(JwtGuard)
+    async updateServer(@Param('serverId') serverId: string, @Body() serverData: ServerUpdateDto, @Req() req: Request) {
+        try {
+            if(!serverId) throw new HttpException('serverId is missing', HttpStatus.BAD_REQUEST)
+            const userId = (req.user as AuthenticatedUserType)?.id;
+            const server = await this.serverService.updateServer(userId,serverId,serverData)
+            return { message: 'Server updated', data: {server} }
+        }
+        catch(error) {
             if (error instanceof HttpException) {
                 throw error;
             }

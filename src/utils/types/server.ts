@@ -3,3 +3,8 @@ export type ServerCreateInputType = {
     image?: string
     inviteCode?: string
 }
+
+export type ServerUpdateInputType = {
+    name?: string
+    image?: string
+}
