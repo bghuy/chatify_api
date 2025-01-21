@@ -173,4 +173,72 @@ export class ServerService {
             throw new HttpException(ErrorType.SERVER_INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
+
+    async createNewServerInviteCode(userId: string, serverId: string) {
+        try {
+            const existingUser = await this.prisma.user.findUnique({
+                where: {
+                    id: userId
+                }
+            })
+            if (!existingUser) throw new HttpException(ErrorType.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED)
+            const server = await this.prisma.server.update({
+                where: {
+                    id: serverId,
+                    userId: userId
+                },
+                data: {
+                    inviteCode: uuidv4()
+                }
+            }); 
+            return server
+        } catch (error) {
+            throw new HttpException(ErrorType.SERVER_INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async joinServer(userId: string, inviteCode: string) {
+        try {
+            const existingUser = await this.prisma.user.findUnique({
+                where: {
+                    id: userId
+                }
+            })
+            if (!existingUser) throw new HttpException(ErrorType.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED)
+            const existingServer = await this.prisma.server.findFirst({
+                where: {
+                    inviteCode: inviteCode,
+                    members: {
+                        some: {
+                            userId: userId
+                        }
+                    }
+                }
+            })
+            if(existingServer) throw new HttpException('User is already a member of the server', HttpStatus.CONFLICT);
+            const server = await this.prisma.server.update({
+                where: {
+                    inviteCode: inviteCode,
+                },
+                data: {
+                    members: {
+                        create: [
+                            {
+                                userId: userId
+                            }
+                        ]
+                    }
+                }
+            })
+            console.log(server,"server");
+            
+            return server
+        } catch (error) {
+            console.log(error,'error');
+            
+            throw new HttpException(ErrorType.SERVER_INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+
+
+    }
 }

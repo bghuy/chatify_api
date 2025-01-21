@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { ServerModule } from './server/server.module';
+import { MemberModule } from './member/member.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -12,7 +13,8 @@ import { ServerModule } from './server/server.module';
     }),
     AuthModule,
     UserModule,
-    ServerModule
+    ServerModule,
+    MemberModule
   ],
   controllers: [AppController],
   providers: [AppService],
