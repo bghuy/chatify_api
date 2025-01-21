@@ -10,7 +10,7 @@ import { ServerCreateDto, ServerUpdateDto } from './../dtos/server/ServerCreate.
 export class ServerController {
     constructor(private  readonly serverService: ServerService) {}
 
-    @Get('/all')
+    @Get('all')
     @UseGuards(JwtGuard)
     async getServers(@Req() req: Request) {
         console.log("all");
@@ -106,6 +106,50 @@ export class ServerController {
         }
     }
 
+    @Patch(':serverId/invite-code')
+    @UseGuards(JwtGuard)
+    async generateNewServerInviteCode(@Param('serverId') serverId: string, @Req() req: Request) {
+        try {
+            if(!serverId) throw new HttpException('serverId is missing', HttpStatus.BAD_REQUEST)
+            const userId = (req.user as AuthenticatedUserType)?.id;
+            const server = await this.serverService.createNewServerInviteCode(userId,serverId)
+            return { message: 'Invite code updated', data: {server} }
+        }
+        catch(error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    @Patch('join-server')
+    @UseGuards(JwtGuard)
+    async joinServer(@Body('inviteCode') inviteCode: string,  @Req() req: Request) {
+        try {
+            if(!inviteCode) throw new HttpException('inviteCode is missing', HttpStatus.BAD_REQUEST)
+            const userId = (req.user as AuthenticatedUserType)?.id;
+            const server = await this.serverService.joinServer(userId,inviteCode)
+            console.log(server);
+            return { message: 'Server joined', data: {server} }
+        }
+        catch(error) {
+            
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+    
+
+
     @Patch(':serverId')
     @UseGuards(JwtGuard)
     async updateServer(@Param('serverId') serverId: string, @Body() serverData: ServerUpdateDto, @Req() req: Request) {
@@ -125,4 +169,6 @@ export class ServerController {
             );
         }
     }
+
+
 }
