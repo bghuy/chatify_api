@@ -12,7 +12,7 @@ import { UserRegisterDto } from './../dtos/user/UserRegisterDto';
 import { GoogleGuard } from './../guards/google.guard';
 import { CustomRequest } from './../utils/interfaces/request';
 import { PrismaService } from './../prisma/prisma.service';
-import { AuthenticatedUserType } from 'src/utils/types/auth';
+import { AuthenticatedUserType } from './../utils/types/auth';
 
 @Controller('auth')
 export class AuthController {

@@ -1,12 +1,12 @@
 import { Body, Controller, Delete, HttpException, HttpStatus, Param, Patch, Query, Req, UseGuards } from '@nestjs/common';
-import { JwtGuard } from 'src/guards/jwt.guard';
-import { ErrorType } from 'src/utils/error';
+import { JwtGuard } from './../guards/jwt.guard';
+import { ErrorType } from './../utils/error';
 import { MemberService } from './member.service';
 import { Request } from 'express';
-import { AuthenticatedUserType } from 'src/utils/types/auth';
+import { AuthenticatedUserType } from './../utils/types/auth';
 import { MemberRole } from '@prisma/client';
-import { ServerRoles } from 'src/decorators/sever-role.decorator';
-import { ServerRoleGuard } from 'src/guards/server-role.guard';
+import { ServerRoles } from './../decorators/sever-role.decorator';
+import { ServerRoleGuard } from './../guards/server-role.guard';
 
 @Controller('member')
 export class MemberController {

@@ -3,7 +3,7 @@ import { Reflector } from "@nestjs/core";
 import { Request } from "express";
 import { Observable } from "rxjs";
 import { ServerRoles } from "./../decorators/sever-role.decorator";
-import { PrismaService } from "src/prisma/prisma.service";
+import { PrismaService } from "./../prisma/prisma.service";
 
 
 @Injectable()
