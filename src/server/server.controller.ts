@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtGuard } from './../guards/jwt.guard';
 import { ErrorType } from './../utils/error';
@@ -29,13 +29,38 @@ export class ServerController {
         }
     } 
 
+    @Get(':serverId/member/me')
+    @UseGuards(JwtGuard)
+    async getCurrentMemberByServerId(
+        @Param('serverId') serverId: string,
+        @Req() req: Request,
+    ){
+        try {
+            const member = await this.serverService.fetchCurrentMemberInServer((req.user as AuthenticatedUserType)?.id,serverId);
+            return { message: 'Member found', data: {member} }
+        } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
     @Get(':serverId')
     @UseGuards(JwtGuard)
-    async getServerById(@Param('serverId') serverId: string,@Req() req: Request) {
+    async getServerById(
+        @Param('serverId') serverId: string,
+        @Req() req: Request,
+        @Query('channelName') channelName?: string,
+    ){
         console.log("id");
-        
         try {
-            const server = await this.serverService.fetchServerById(serverId);
+            const server = await this.serverService.fetchServerById(serverId, channelName);
+            console.log(server,"server");
+            
             return { message: 'Server found', data: {server} }
         } catch (error) {
             if (error instanceof HttpException) {
@@ -105,6 +130,8 @@ export class ServerController {
             );
         }
     }
+
+
 
     @Patch(':serverId/invite-code')
     @UseGuards(JwtGuard)
