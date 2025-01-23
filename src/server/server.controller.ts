@@ -12,9 +12,7 @@ export class ServerController {
 
     @Get('all')
     @UseGuards(JwtGuard)
-    async getServers(@Req() req: Request) {
-        console.log("all");
-        
+    async getServers(@Req() req: Request) { 
         try {
             const servers = await this.serverService.fetchServers((req.user as AuthenticatedUserType)?.id);
             return { message: 'Servers found', data: {servers} }
@@ -56,10 +54,8 @@ export class ServerController {
         @Req() req: Request,
         @Query('channelName') channelName?: string,
     ){
-        console.log("id");
         try {
             const server = await this.serverService.fetchServerById(serverId, channelName);
-            console.log(server,"server");
             
             return { message: 'Server found', data: {server} }
         } catch (error) {
@@ -160,7 +156,6 @@ export class ServerController {
             if(!inviteCode) throw new HttpException('inviteCode is missing', HttpStatus.BAD_REQUEST)
             const userId = (req.user as AuthenticatedUserType)?.id;
             const server = await this.serverService.joinServer(userId,inviteCode)
-            console.log(server);
             return { message: 'Server joined', data: {server} }
         }
         catch(error) {

@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import { ServerModule } from './server/server.module';
 import { MemberModule } from './member/member.module';
 import { ChannelModule } from './channel/channel.module';
+import { GatewayModule } from './gateway/gateway.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -16,7 +17,8 @@ import { ChannelModule } from './channel/channel.module';
     UserModule,
     ServerModule,
     MemberModule,
-    ChannelModule
+    ChannelModule,
+    GatewayModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -277,7 +277,6 @@ export class ServerService {
                     }
                 }
             })
-            console.log(server,"server");
             
             return server
         } catch (error) {
