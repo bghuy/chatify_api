@@ -8,7 +8,42 @@ import {v4 as uuidv4} from "uuid"
 export class ServerService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async fetchServerById(serverId: string) {
+    async fetchCurrentMemberInServer(userId: string,serverId: string) {
+        try {
+            const existingUser = await this.prisma.user.findUnique({
+                where: {
+                    id: userId
+                }
+            })
+            if (!existingUser) throw new HttpException(ErrorType.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED)
+            if(!serverId) throw new HttpException("serverId is missing", HttpStatus.BAD_REQUEST);
+            const member = await this.prisma.member.findFirst({
+                where: {
+                    serverId: serverId,
+                    userId: userId
+                },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            emailVerified: true,
+                            image: true,
+                            role: true,
+                            createdAt: true,
+                            updatedAt: true,   
+                        }
+                    }
+                }
+            });
+            return member
+        } catch (error) {
+            throw new HttpException(ErrorType.SERVER_INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async fetchServerById(serverId: string, channelName?: string) {
         if(!serverId) throw new HttpException("serverId is missing", HttpStatus.BAD_REQUEST);
         try {
             const server = await this.prisma.server.findUnique({
@@ -17,13 +52,25 @@ export class ServerService {
                 },
                 include: {
                     channels: {
+                        where: channelName ? { name: channelName } : undefined,
                         orderBy: {
                             createdAt: "asc"
                         }
                     },
                     members: {
                         include: {
-                            user: true
+                            user: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    email: true,
+                                    emailVerified: true,
+                                    image: true,
+                                    role: true,
+                                    createdAt: true,
+                                    updatedAt: true,   
+                                }
+                            }
                         },
                         orderBy: {
                             role: "asc"
@@ -230,7 +277,6 @@ export class ServerService {
                     }
                 }
             })
-            console.log(server,"server");
             
             return server
         } catch (error) {
