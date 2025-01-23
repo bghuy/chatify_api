@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MemberController } from './member.controller';
 import { MemberService } from './member.service';
-import { PrismaModule } from 'src/prisma/prisma.module';
-import { jwtStrategy } from 'src/auth/strategies/jwt.strategy';
+import { PrismaModule } from './../prisma/prisma.module';
+import { jwtStrategy } from './../auth/strategies/jwt.strategy';
 
 @Module({
   imports: [PrismaModule],

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtGuard } from './../guards/jwt.guard';
 import { ErrorType } from './../utils/error';
@@ -12,9 +12,7 @@ export class ServerController {
 
     @Get('all')
     @UseGuards(JwtGuard)
-    async getServers(@Req() req: Request) {
-        console.log("all");
-        
+    async getServers(@Req() req: Request) { 
         try {
             const servers = await this.serverService.fetchServers((req.user as AuthenticatedUserType)?.id);
             return { message: 'Servers found', data: {servers} }
@@ -29,13 +27,36 @@ export class ServerController {
         }
     } 
 
+    @Get(':serverId/member/me')
+    @UseGuards(JwtGuard)
+    async getCurrentMemberByServerId(
+        @Param('serverId') serverId: string,
+        @Req() req: Request,
+    ){
+        try {
+            const member = await this.serverService.fetchCurrentMemberInServer((req.user as AuthenticatedUserType)?.id,serverId);
+            return { message: 'Member found', data: {member} }
+        } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
     @Get(':serverId')
     @UseGuards(JwtGuard)
-    async getServerById(@Param('serverId') serverId: string,@Req() req: Request) {
-        console.log("id");
-        
+    async getServerById(
+        @Param('serverId') serverId: string,
+        @Req() req: Request,
+        @Query('channelName') channelName?: string,
+    ){
         try {
-            const server = await this.serverService.fetchServerById(serverId);
+            const server = await this.serverService.fetchServerById(serverId, channelName);
+            
             return { message: 'Server found', data: {server} }
         } catch (error) {
             if (error instanceof HttpException) {
@@ -106,6 +127,8 @@ export class ServerController {
         }
     }
 
+
+
     @Patch(':serverId/invite-code')
     @UseGuards(JwtGuard)
     async generateNewServerInviteCode(@Param('serverId') serverId: string, @Req() req: Request) {
@@ -133,7 +156,6 @@ export class ServerController {
             if(!inviteCode) throw new HttpException('inviteCode is missing', HttpStatus.BAD_REQUEST)
             const userId = (req.user as AuthenticatedUserType)?.id;
             const server = await this.serverService.joinServer(userId,inviteCode)
-            console.log(server);
             return { message: 'Server joined', data: {server} }
         }
         catch(error) {

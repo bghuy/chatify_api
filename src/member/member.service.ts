@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { MemberRole } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ErrorType } from 'src/utils/error';
+import { PrismaService } from './../prisma/prisma.service';
+import { ErrorType } from './../utils/error';
 
 @Injectable()
 export class MemberService {
