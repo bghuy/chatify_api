@@ -28,20 +28,23 @@ async function bootstrap() {
   });
 
   app.use(cookieParser());
+  app.connectMicroservice({
+
+  })
   await app.listen(process.env.PORT ?? 3000);
 
-  const microservice = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
-    transport: Transport.RMQ,
-    options: {
-      urls: ['amqp://localhost:5672'],
-      queue: 'main_queue',
-      queueOptions: {
-        durable: false,
-      },
-    },
-  });
-  microservice.listen();
-  console.log('Microservice is listening');
+  // const microservice = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+  //   transport: Transport.RMQ,
+  //   options: {
+  //     urls: ['amqps://orjnbmgw:pRl3Pn91eq0NPHe-o3k0svohbcRS_5Ec@fuji.lmq.cloudamqp.com/orjnbmgw'],
+  //     queue: 'main_queue',
+  //     queueOptions: {
+  //       durable: false,
+  //     },
+  //   },
+  // });
+  // microservice.listen();
+  // console.log('Microservice is listening');
   
 }
 
