@@ -8,7 +8,13 @@ import {
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
   
-  @WebSocketGateway({ cors: { origin: '*' }, namespace: '/chat' })
+  @WebSocketGateway({ 
+    cors: { 
+      origin: [process.env.CLIENT_PRODUCTION_URL, process.env.CLIENT_DEVELOPMENT_URL],
+      credentials: true, 
+    }, 
+    namespace: '/chat' 
+  })
   export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
     server: Server;
