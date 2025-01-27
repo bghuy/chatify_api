@@ -10,6 +10,7 @@ import { ChannelModule } from './channel/channel.module';
 import { GatewayModule } from './gateway/gateway.module';
 import { ChatModule } from './chat/chat.module';
 import { RabbitMQModule } from './rabbitmq/rabbitmq.module';
+import { MessagesModule } from './messages/messages.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -22,7 +23,8 @@ import { RabbitMQModule } from './rabbitmq/rabbitmq.module';
     ChannelModule,
     GatewayModule,
     ChatModule,
-    RabbitMQModule
+    RabbitMQModule,
+    MessagesModule
   ],
   controllers: [AppController],
   providers: [AppService],
