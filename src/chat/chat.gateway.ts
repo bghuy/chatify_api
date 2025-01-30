@@ -29,7 +29,7 @@ import { ChatService } from './chat.service';
       console.log(`Client disconnected: ${client.id}`);
     }
   
-    @SubscribeMessage('send_message')
+    @SubscribeMessage('new_message')
     async handleMessage(client: Socket, payload: any) {
       console.log('Received message:', payload);
   
@@ -37,7 +37,7 @@ import { ChatService } from './chat.service';
       this.server.emit('receive_message', payload);
   
       // Lưu tin nhắn vào RabbitMQ
-      await this.chatService.sendMessageToQueue(payload);
+      // await this.chatService.sendMessageToQueue(payload);
     }
   }
   
