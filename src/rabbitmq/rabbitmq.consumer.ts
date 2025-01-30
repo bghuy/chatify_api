@@ -19,22 +19,19 @@ export class RabbitMQConsumer implements OnModuleInit {
     this.channel.consume('chat_queue', async (msg) => {
       if (msg !== null) {
         const message = JSON.parse(msg.content.toString());
-        console.log('Message received from amqp:', message);
+        // console.log('Message received from amqp:', message);
 
         // Lưu tin nhắn vào database
-        // await this.prisma.message.create({
-        //     data: {
-
-        //     }
-        // })
-        // await this.prisma.message.create({
-        //   data: {
-        //     content: message.content,
-        //     memberId: message.memberId,
-        //     channelId: message.channelId,
-        //     fileUrl: message.fileUrl || null,
-        //   },
-        // });
+        await this.prisma.message.create({
+          data: {
+            content: message?.content,
+            memberId: message?.memberId,
+            channelId: message?.channelId,
+            fileUrl: message?.fileUrl || null,
+            createdAt: message?.createdAt || new Date(),
+            updatedAt: message?.updatedAt || new Date(),
+          },
+        });
 
         this.channel.ack(msg); // Xác nhận đã xử lý tin nhắn
       }
