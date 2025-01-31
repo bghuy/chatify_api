@@ -6,6 +6,6 @@ export class ChatService {
   constructor(private readonly rabbitMQService: RabbitMQService) {}
 
   async sendMessageToQueue(message: any) {
-    await this.rabbitMQService.sendMessage('chat_queue', message);
+    await this.rabbitMQService.sendMessage('new_message_queue', message);
   }  
 }

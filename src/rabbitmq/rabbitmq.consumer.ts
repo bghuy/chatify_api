@@ -15,15 +15,17 @@ export class RabbitMQConsumer implements OnModuleInit {
     console.log('Connected to RabbitMQ for consuming');
 
     // Lắng nghe hàng đợi 'chat_queue'
-    await this.channel.assertQueue('chat_queue');
-    this.channel.consume('chat_queue', async (msg) => {
-      if (msg !== null) {
+    await this.channel.assertQueue('new_message_queue');
+    this.channel.consume('new_message_queue', async (msg) => {
+
+      if (true) {
         const message = JSON.parse(msg.content.toString());
-        // console.log('Message received from amqp:', message);
+        console.log('Parsed message:', message);
 
         // Lưu tin nhắn vào database
-        await this.prisma.message.create({
+        const newMessage = await this.prisma.message.create({
           data: {
+            id: message?.id,
             content: message?.content,
             memberId: message?.memberId,
             channelId: message?.channelId,
@@ -32,9 +34,12 @@ export class RabbitMQConsumer implements OnModuleInit {
             updatedAt: message?.updatedAt || new Date(),
           },
         });
+        console.log(newMessage,"newMessage");
+        
 
         this.channel.ack(msg); // Xác nhận đã xử lý tin nhắn
       }
+
     });
   }
 }
