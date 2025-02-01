@@ -14,8 +14,6 @@ export class RabbitMQService implements OnModuleInit {
 
   async sendMessage(queue: string, message: any) {
     await this.channel.assertQueue(queue);
-    console.log("send message", message);
-    
     return this.channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)));
   }
 }

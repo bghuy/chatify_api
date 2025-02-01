@@ -39,7 +39,6 @@ import {v4 as uuidv4} from "uuid"
       const emittingPayload = {
         id,
         memberId,
-        fileUrl: null,
         deleted: false,
         ...filteredPayload,
       }
@@ -48,6 +47,31 @@ import {v4 as uuidv4} from "uuid"
   
       // send the message to the queue
       await this.chatService.sendMessageToQueue(emittingPayload);
+    }
+
+    @SubscribeMessage('update_message')
+    async handleUpdateMessage(client: Socket, payload: any) {
+      // const id = uuidv4();
+      // emit the message to all connected clients
+      const {serverId,access_token, deleted,id ,updatedAt,content, fileUrl, ...filteredPayload} = payload
+      if(!id) return;
+      const memberId = filteredPayload?.member?.id;
+      const channelId = filteredPayload?.channelId;
+      const emittingPayload = {
+        id,
+        memberId,
+        deleted: deleted || false,
+        content: deleted ? "This message has been deleted" : content,
+        fileUrl: deleted ? null : fileUrl,
+        updatedAt: new Date(),
+        ...filteredPayload,
+      }
+      const channelKey = `chat:${channelId}:messages:update`;
+      this.server.emit(channelKey, emittingPayload);
+      console.log("emittingPayload", emittingPayload);
+        
+      // send the message to the queue
+      await this.chatService.sendUpdatedMessageToQueue(emittingPayload);  
     }
   }
   
