@@ -11,6 +11,7 @@ import { GatewayModule } from './gateway/gateway.module';
 import { ChatModule } from './chat/chat.module';
 import { RabbitMQModule } from './rabbitmq/rabbitmq.module';
 import { MessagesModule } from './messages/messages.module';
+import { ConversationModule } from './conversation/conversation.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -24,7 +25,8 @@ import { MessagesModule } from './messages/messages.module';
     GatewayModule,
     ChatModule,
     RabbitMQModule,
-    MessagesModule
+    MessagesModule,
+    ConversationModule
   ],
   controllers: [AppController],
   providers: [AppService],
