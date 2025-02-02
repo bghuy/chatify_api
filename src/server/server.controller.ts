@@ -149,6 +149,25 @@ export class ServerController {
         }
     }
 
+    @Patch(':serverId/leave')
+    @UseGuards(JwtGuard)
+    async leaveServer(@Param('serverId') serverId: string, @Req() req: Request) {
+        try {
+            const userId = (req.user as AuthenticatedUserType)?.id;
+            const server = await this.serverService.leaveServer(userId,serverId)
+            return { message: 'Leave server successfully', data: {server} }
+        }
+        catch(error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
     @Patch('join-server')
     @UseGuards(JwtGuard)
     async joinServer(@Body('inviteCode') inviteCode: string,  @Req() req: Request) {

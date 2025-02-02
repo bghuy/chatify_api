@@ -87,11 +87,15 @@ export class AuthController {
     } 
     @Post('register')
     @UsePipes(ValidationPipe)
-    async registerUser (@Body() newUserData: UserRegisterDto, @Res() res: Response) {
-        const {email, password} = newUserData;
-        const user = await this.authService.registerUser({email, password});
-        if(!user) throw new HttpException(ErrorType.SERVER_INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
-        return res.json({ message: 'User registered successfully' });
+    async registerUser (@Body() newUserData: UserRegisterDto) {
+        console.log("run1");
+        
+        const {email, password, name} = newUserData;
+        const user = await this.authService.registerUser({email, password, name});
+        return {
+            message: 'Registered successfully',
+            data: { user }
+        };
     }
 
     @Post('logout')
@@ -116,14 +120,16 @@ export class AuthController {
         const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000
         res.cookie('refresh_token', refresh_token, {
             httpOnly: true,
-            maxAge: refreshTokenExpiry || sevenDaysInMs,
             secure: process.env.SERVER_MODE === 'production',
-            sameSite: 'none'
+            maxAge: refreshTokenExpiry || sevenDaysInMs,
+            sameSite: process.env.SERVER_MODE === 'production' ? 'none' : 'lax',
         });
-        return { 
-            message: 'Login successful', 
-            data: {access_token} 
-        };
+        const clientBaseUrl = process.env.SERVER_MODE === 'production' ? process.env.CLIENT_PRODUCTION_URL : process.env.CLIENT_DEVELOPMENT_URL
+        return res.redirect(`${clientBaseUrl}/auth/social?access_token=${access_token}`);
+        // return { 
+        //     message: 'Login successful', 
+        //     data: {access_token} 
+        // };
     }
 
     @Get('test-cookie')
