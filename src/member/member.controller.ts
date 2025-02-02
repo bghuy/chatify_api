@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, HttpException, HttpStatus, Param, Patch, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Query, Req, UseGuards } from '@nestjs/common';
 import { JwtGuard } from './../guards/jwt.guard';
 import { ErrorType } from './../utils/error';
 import { MemberService } from './member.service';
@@ -15,7 +15,7 @@ export class MemberController {
     @Patch(':memberId')
     @ServerRoles(['ADMIN'])
     @UseGuards(JwtGuard,ServerRoleGuard)
-    async getMember(
+    async updateMemberRole(
         @Param('memberId') memberId: string,
         @Query('serverId') serverId: string,
         @Body('role') role: MemberRole,
@@ -49,6 +49,29 @@ export class MemberController {
         try {
             const server = await this.memberService.deleteMember((req.user as AuthenticatedUserType)?.id, memberId, serverId);
             return { message: 'Member deleted', data: {server} }
+        }
+        catch(error) {
+            
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+
+    @Get()
+    @UseGuards(JwtGuard)
+    async getCurrentMemberInServer(
+        @Query('serverId') serverId: string,
+        @Req() req: Request
+    ) {
+        try {
+            const member = await this.memberService.fetchCurrentMemberInServer((req.user as AuthenticatedUserType)?.id, serverId);
+            return { message: 'Member found', data: {member} }
         }
         catch(error) {
             

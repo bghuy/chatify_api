@@ -8,6 +8,45 @@ export class MemberService {
 
     constructor(private readonly prisma: PrismaService) {}
 
+    async fetchCurrentMemberInServer(userId: string, serverId: string) {
+        try {
+            const existingUser = await this.prisma.user.findUnique({
+                where: {
+                    id: userId
+                }
+            })
+            if (!existingUser) throw new HttpException(ErrorType.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED)
+            if(!serverId) return new HttpException("Server ID is missing", HttpStatus.BAD_REQUEST);
+            const server = await this.prisma.member.findFirst({
+                    where: {
+                        serverId: serverId,
+                        userId: userId
+                    },
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                                emailVerified: true,
+                                image: true,
+                                role: true,
+                                createdAt: true,
+                                updatedAt: true,   
+                            }
+                        },
+                    }
+                })
+            return server
+
+        } catch (error) {
+            throw new HttpException(
+                ErrorType.SERVER_INTERNAL_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            )
+        }
+    }
+
     async updateMemberRole(userId: string, memberId: string, serverId: string, role: MemberRole) {
         try {
             const existingUser = await this.prisma.user.findUnique({
