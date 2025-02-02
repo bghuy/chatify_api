@@ -46,6 +46,8 @@ export class AuthService {
     }
     async registerUser (user: UserRegisterType) {
         try {
+            console.log("run2");
+            
             const existingUser = await this.prisma.user.findUnique({
                 where: {
                     email: user.email
@@ -59,6 +61,16 @@ export class AuthService {
                 data: {
                     ...user,
                     password: hashedPassword
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    emailVerified: true,
+                    image: true,
+                    role: true,
+                    createdAt: true,
+                    updatedAt: true,   
                 }
             })
 
@@ -84,11 +96,11 @@ export class AuthService {
             if(!existingUser) { 
                 throw new HttpException(ErrorType.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
             }
-            const {password, ...userData} = existingUser;
+            const {password, ...user} = existingUser;
             return {
-                access_token: this.jwtService.sign({userData}),
+                access_token: this.jwtService.sign({user}),
                 refresh_token: this.jwtService.sign(
-                    {userData}, 
+                    {user}, 
                     {expiresIn: '7d', secret: process.env.JWT_REFRESH_SECRET}
                 ),
             } 

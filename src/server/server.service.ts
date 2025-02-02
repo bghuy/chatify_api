@@ -244,6 +244,42 @@ export class ServerService {
         }
     }
 
+    async leaveServer(userId: string, serverId: string) {
+        try {
+            const existingUser = await this.prisma.user.findUnique({
+                where: {
+                    id: userId
+                }
+            })
+            if (!existingUser) throw new HttpException(ErrorType.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED)
+            if(!serverId) throw new HttpException("Server ID is missing", HttpStatus.BAD_REQUEST)
+            const server = await this.prisma.server.update({
+                where: {
+                    id: serverId,
+                    userId: {
+                        not: userId
+                    },
+                    members: {
+                        some: {
+                            userId: userId
+                        }
+                    }
+                },
+                data: {
+                    members: {
+                        deleteMany: {
+                            userId: userId
+                        }
+                    }
+                }
+    
+            }) 
+            return server
+        } catch (error) {
+            throw new HttpException(ErrorType.SERVER_INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
     async joinServer(userId: string, inviteCode: string) {
         try {
             const existingUser = await this.prisma.user.findUnique({

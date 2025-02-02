@@ -7,7 +7,7 @@ export type AuthPayloadParams = {
 
 export type UserRegisterType = {
     id?: string
-    name?: string | null
+    name: string | null
     email: string
     emailVerified?: Date | string | null
     image?: string | null
