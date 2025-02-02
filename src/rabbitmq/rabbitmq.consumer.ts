@@ -52,8 +52,6 @@ export class RabbitMQConsumer implements OnModuleInit {
         // Lưu tin nhắn vào database
         try {
           if(message?.deleted){
-            console.log("run 1");
-            
             const deletedMessage = await this.prisma.message.update({
               where: {
                   id: message?.id,
@@ -66,8 +64,6 @@ export class RabbitMQConsumer implements OnModuleInit {
             })
           }
           else {
-            console.log("run 2");
-            
             const updatedMessage = await this.prisma.message.update({
               where: {
                 id: message?.id,
@@ -85,5 +81,71 @@ export class RabbitMQConsumer implements OnModuleInit {
       }
 
     });
+
+    await this.channel.assertQueue('new_direct_message_queue');
+    this.channel.consume('new_direct_message_queue', async (msg) => {
+
+      if (msg) {
+        const message = JSON.parse(msg.content.toString());
+        console.log('Parsed message:', message);
+
+        // Lưu tin nhắn vào database
+        const newMessage = await this.prisma.directMessage.create({
+          data: {
+              id: message?.id,
+              content: message?.content,
+              fileUrl: message?.fileUrl || null,
+              conversationId: message?.conversationId,
+              memberId: message?.memberId
+          },
+        })
+        console.log(newMessage,"newMessage");
+        
+
+        this.channel.ack(msg); // Xác nhận đã xử lý tin nhắn
+      }
+
+    });
+
+    await this.channel.assertQueue('update_direct_message_queue');
+    this.channel.consume('update_direct_message_queue', async (msg) => {
+
+      if (msg) {
+        const message = JSON.parse(msg.content.toString());
+        console.log('Parsed updated message:', message);
+
+        // Lưu tin nhắn vào database
+        try {
+          if(message?.deleted){
+            const deletedMessage = await this.prisma.directMessage.update({
+              where: {
+                  id: message?.id,
+              },
+              data: {
+                  fileUrl: null,
+                  content: "This message has been deleted",
+                  deleted: true
+              },
+            })
+          }
+          else {
+            const updatedMessage = await this.prisma.directMessage.update({
+              where: {
+                  id: message?.id,
+              },
+              data: {
+                content: message?.content,
+                updatedAt: message?.updatedAt,
+              },
+            })
+          }
+        } catch (error) {
+          console.log(error);
+        }
+        this.channel.ack(msg); // Xác nhận đã xử lý tin nhắn
+      }
+
+    });
+    
   }
 }

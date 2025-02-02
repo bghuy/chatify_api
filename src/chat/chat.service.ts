@@ -10,5 +10,11 @@ export class ChatService {
   }  
   async sendUpdatedMessageToQueue(message: any) {
     await this.rabbitMQService.sendMessage('update_message_queue', message);
+  }
+  async sendDirectMessageToQueue(message: any) {
+    await this.rabbitMQService.sendMessage('new_direct_message_queue', message);
   } 
+  async sendUpdatedDirectMessageToQueue(message: any) {
+    await this.rabbitMQService.sendMessage('update_direct_message_queue', message);
+  }
 }
