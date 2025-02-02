@@ -12,6 +12,7 @@ import { ChatModule } from './chat/chat.module';
 import { RabbitMQModule } from './rabbitmq/rabbitmq.module';
 import { MessagesModule } from './messages/messages.module';
 import { ConversationModule } from './conversation/conversation.module';
+import { DirectMessagesModule } from './direct-messages/direct-messages.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -26,7 +27,8 @@ import { ConversationModule } from './conversation/conversation.module';
     ChatModule,
     RabbitMQModule,
     MessagesModule,
-    ConversationModule
+    ConversationModule,
+    DirectMessagesModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -73,5 +73,55 @@ import {v4 as uuidv4} from "uuid"
       // send the message to the queue
       await this.chatService.sendUpdatedMessageToQueue(emittingPayload);  
     }
+
+
+    @SubscribeMessage('new_direct_message')
+    async handleDirectMessage(client: Socket, payload: any) {
+      const id = uuidv4();
+      // emit the message to all connected clients
+      const {access_token, ...filteredPayload} = payload
+      const memberId = filteredPayload?.member?.id;
+      const conversationId = filteredPayload?.conversationId;
+      const emittingPayload = {
+        id,
+        memberId,
+        deleted: false,
+        ...filteredPayload,
+      }
+      const channelKey = `chat:${conversationId}:messages`;
+      console.log("emittingPayload", emittingPayload);
+      
+      this.server.emit(channelKey, emittingPayload);
+  
+      // send the message to the queue
+      await this.chatService.sendDirectMessageToQueue(emittingPayload);
+    }
+
+
+    @SubscribeMessage('update_direct_message')
+    async handleUpdateDirectMessage(client: Socket, payload: any) {
+      // const id = uuidv4();
+      // emit the message to all connected clients
+      const {access_token, deleted,id ,updatedAt,content, fileUrl, ...filteredPayload} = payload
+      if(!id) return;
+      const memberId = filteredPayload?.member?.id; 
+      const conversationId = filteredPayload?.conversationId;
+      const emittingPayload = {
+        id,
+        memberId,
+        deleted: deleted || false,
+        content: deleted ? "This message has been deleted" : content,
+        fileUrl: deleted ? null : fileUrl,
+        updatedAt: new Date(),
+        ...filteredPayload,
+      }
+      const channelKey = `chat:${conversationId}:messages:update`;
+      this.server.emit(channelKey, emittingPayload);
+      console.log("emittingPayload", emittingPayload);
+        
+      // send the message to the queue
+      await this.chatService.sendUpdatedDirectMessageToQueue(emittingPayload);  
+    }
   }
+  
   
